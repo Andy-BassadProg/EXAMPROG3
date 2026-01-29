@@ -1,0 +1,120 @@
+package Model;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+public class Dish {
+    private Integer id;
+    private Double price;
+    private String name;
+    private DishTypeEnum dishType;
+    private List<DishIngredient> dishIngredients;
+
+    public Dish() {
+    }
+
+    public Dish(List<DishIngredient> dishIngredients, DishTypeEnum dishType, Integer id, String name, Double price) {
+        this.dishIngredients = dishIngredients;
+        this.dishType = dishType;
+        this.id = id;
+        this.name = name;
+        this.price = price;
+    }
+
+    public List<DishIngredient> getDishIngredients() {
+        return dishIngredients;
+    }
+
+    public void setDishIngredients(List<DishIngredient> dishIngredients) {
+        if (dishIngredients == null) {
+            this.dishIngredients = new ArrayList<>();
+            return;
+        }
+        for (DishIngredient ingredient : dishIngredients) {
+            ingredient.setDish(this);
+        }
+        this.dishIngredients = dishIngredients;
+    }
+
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public DishTypeEnum getDishType() {
+        return dishType;
+    }
+
+    public void setDishType(DishTypeEnum dishType) {
+        this.dishType = dishType;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Dish dish = (Dish) o;
+        return Objects.equals(id, dish.id) && Objects.equals(name, dish.name) && dishType == dish.dishType && Objects.equals(dishIngredients, dish.dishIngredients);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, dishType, dishIngredients);
+    }
+
+    @Override
+    public String toString() {
+        return "Dish{" +
+                "id=" + id +
+                ", price=" + price +
+                ", name='" + name + '\'' +
+                ", dishType=" + dishType +
+                ", cost=" + getDishCost() +
+                ", grossMargin=" + getGrossMargin() +
+                ", ingredients=" + dishIngredients +
+                '}';
+    }
+
+    public Double getGrossMargin() {
+        if (price == null) {
+            throw new RuntimeException("Price is null");
+        }
+        return price - getDishCost();
+    }
+    public Double getDishCost() {
+        double totalCost = 0;
+        for (DishIngredient di : dishIngredients) {
+            // On suppose que le prix de l'ingrédient est défini pour 1 KG
+            // On convertit la quantité requise en KG avant de multiplier
+            double quantityInKg = UnitConverter.convert(
+                    di.getIngredient().getName(),
+                    di.getQuantity(),
+                    di.getUnit(),
+                    Unit.KG
+            );
+            totalCost += di.getIngredient().getPrice() * quantityInKg;
+        }
+        return totalCost;
+    }
+}
